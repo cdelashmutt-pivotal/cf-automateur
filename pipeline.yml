@@ -1,0 +1,42 @@
+resources:
+- name: repo
+  type: git
+  source: 
+    uri: https://github.com/cdelashmutt-pivotal/cf-automateur
+    branch: master
+    username: ((github-user))
+    password: ((github-password))
+
+- name: version
+  type: semver
+  source:
+    driver: git
+    uri: https://github.com/cdelashmutt-pivotal/cf-automateur
+    branch: master
+    file: version
+    username: ((github-user))
+    password: ((github-password))
+    git_user: "Concourse CI <cdelashmutt@pivotal.io>"
+    commit_message: "[skip ci] Bumping version to %version% in file %file%"
+    initial_version: 0.0.0
+
+- name: cf-automateur-docker-image
+  type: docker-image
+  source:
+    email: ((docker-hub-email))
+    username: ((docker-hub-username))
+    password: ((docker-hub-password))
+    repository: ((docker-hub-email))/cf-automateur
+
+jobs:
+- name: publish-container
+  plan:
+  - get: repo
+    trigger: true
+  - get: version
+    params: { bump: minor }
+  - put: version
+    params: { file: version/version }
+  - put: cf-automateur-docker-image
+    params:
+      build: repo
