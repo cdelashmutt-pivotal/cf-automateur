@@ -12,18 +12,21 @@ resources:
   source:
     owner: cloudfoundry
     repository: bosh-cli
+    access_token: ((github-access-token))
 
 - name: om
   type: github-release
   source:
     owner: pivotal-cf
     repository: om
+    access_token: ((github-access-token))
 
 - name: credhub-cli
   type: github-release
   source:
     owner: cloudfoundry-incubator
     repository: credhub-cli
+    access_token: ((github-access-token))
 
 - name: cf-automateur-docker-image
   type: docker-image
@@ -70,12 +73,17 @@ jobs:
         - -c
         - |
           set -e
-          mv bosh-cli/bosh-cli-*-linux-amd64 bosh-cli/bosh
-          chmod +x bosh-cli/bosh
-          mv om/om-linux om/om
-          chmod +x om/om
-          tar xzf credhub-cli/credhub-linux-2.4.0.tgz -C credhub-cli
-          chmod +x credhub-cli/credhub
+          mkdir repo/bosh-cli
+          mkdir repo/om
+          mkdir repo/credhub-cli
+          mv bosh-cli/bosh-cli-*-linux-amd64 repo/bosh-cli/bosh
+          chmod +x repo/bosh-cli/bosh
+          mv om/om-linux repo/om/om
+          chmod +x repo/om/om
+          tar xzf credhub-cli/credhub-linux-2.4.0.tgz -C repo/credhub-cli
+          chmod +x repo/credhub-cli/credhub
   - put: cf-automateur-docker-image
     params:
       build: repo
+    get_params:
+      skip_download: true
