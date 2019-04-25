@@ -67,6 +67,9 @@ jobs:
       - name: bosh-cli
       - name: om
       - name: credhub-cli
+      - name: repo
+      outputs:
+      - name: repo
       run:
         path: sh
         args: 
