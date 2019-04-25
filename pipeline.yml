@@ -103,7 +103,7 @@ jobs:
     params:
       build: repo
       tag_as_latest: true
-      additional_tags: version/version
+      tag_file: version/version
     get_params:
       skip_download: true
   - put: version
