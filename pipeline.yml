@@ -69,7 +69,7 @@ jobs:
       - "*linux*"
   - get: version
     params: 
-      bump: major
+      bump: minor
   - task: make-tools-executable
     config:
       platform: linux
