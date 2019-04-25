@@ -1,1 +1,3 @@
-deps
+bosh-cli
+om
+credhub-cli

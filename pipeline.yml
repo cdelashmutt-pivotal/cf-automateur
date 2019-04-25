@@ -4,21 +4,26 @@ resources:
   source: 
     uri: https://github.com/cdelashmutt-pivotal/cf-automateur
     branch: master
-    username: ((github-user))
-    password: ((github-password))
+#    username: ((github-user))
+#    password: ((github-password))
 
-- name: version
-  type: semver
+- name: bosh-cli
+  type: github-release
   source:
-    driver: git
-    uri: https://github.com/cdelashmutt-pivotal/cf-automateur
-    branch: master
-    file: version
-    username: ((github-user))
-    password: ((github-password))
-    git_user: "Concourse CI <cdelashmutt@pivotal.io>"
-    commit_message: "[skip ci] Bumping version to %version% in file %file%"
-    initial_version: 0.0.0
+    owner: cloudfoundry
+    repository: bosh-cli
+
+- name: om
+  type: github-release
+  source:
+    owner: pivotal-cf
+    repository: om
+
+- name: credhub-cli
+  type: github-release
+  source:
+    owner: cloudfoundry-incubator
+    repository: credhub-cli
 
 - name: cf-automateur-docker-image
   type: docker-image
@@ -26,17 +31,51 @@ resources:
     email: ((docker-hub-email))
     username: ((docker-hub-username))
     password: ((docker-hub-password))
-    repository: ((docker-hub-email))/cf-automateur
+    repository: ((docker-hub-username))/cf-automateur
 
 jobs:
 - name: publish-container
   plan:
   - get: repo
     trigger: true
-  - get: version
-    params: { bump: minor }
-  - put: version
-    params: { file: version/version }
+  - get: bosh-cli
+    trigger: true
+    params:
+      globs: 
+      - "*linux-amd64*"
+  - get: om
+    trigger: true
+    params:
+      globs: 
+      - "*linux*"
+  - get: credhub-cli
+    trigger: true
+    params:
+      globs: 
+      - "*linux*"
+  - task: make-tools-executable
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: busybox
+      inputs:
+      - name: bosh-cli
+      - name: om
+      - name: credhub-cli
+      run:
+        path: sh
+        args: 
+        - -c
+        - |
+          set -e
+          mv bosh-cli/bosh-cli-*-linux-amd64 bosh-cli/bosh
+          chmod +x bosh-cli/bosh
+          mv om/om-linux om/om
+          chmod +x om/om
+          tar xzf credhub-cli/credhub-linux-2.4.0.tgz -C credhub-cli
+          chmod +x credhub-cli/credhub
   - put: cf-automateur-docker-image
     params:
       build: repo
