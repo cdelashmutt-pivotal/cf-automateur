@@ -4,8 +4,19 @@ resources:
   source: 
     uri: https://github.com/cdelashmutt-pivotal/cf-automateur
     branch: master
-#    username: ((github-user))
-#    password: ((github-password))
+
+- name: version
+  type: semver
+  source:
+    initial_version: 0.0.0
+    driver: git
+    uri: https://github.com/cdelashmutt-pivotal/cf-automateur
+    branch: master
+    file: version
+    username: ((github-user))
+    password: ((github-access-token))
+    git_user: "Concourse CI <cdelashmutt@pivotal.io>"
+    commit_message: "[skip ci] Bump version"
 
 - name: bosh-cli
   type: github-release
@@ -56,6 +67,9 @@ jobs:
     params:
       globs: 
       - "*linux*"
+  - get: version
+    params: 
+      bump: major
   - task: make-tools-executable
     config:
       platform: linux
@@ -88,5 +102,10 @@ jobs:
   - put: cf-automateur-docker-image
     params:
       build: repo
+      tag_as_latest: true
+      additional_tags: version/version
     get_params:
       skip_download: true
+  - put: version
+    params:
+      file: version/version
