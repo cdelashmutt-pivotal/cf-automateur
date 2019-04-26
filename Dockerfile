@@ -1,11 +1,8 @@
-FROM ruby:2.5-alpine
+FROM ubuntu:bionic
 
 ENV PATH "/usr/local/bundle/bin:${PATH}"
 
-RUN apk add --no-cache musl-dev gcc make g++ curl jq zlib zlib-dev ruby-dev openssl libxslt-dev readline-dev sqlite sqlite-dev git bash build-base file linux-headers libc6-compat
-RUN gem update bundler --no-document
-RUN gem install cf-uaac --no-document
+RUN apt-get update && apt-get install -y build-essential zlibc zlib1g-dev ruby ruby-dev openssl libxslt1-dev libxml2-dev libssl-dev libreadline7 libreadline-dev libyaml-dev libsqlite3-dev sqlite3 \
+&& rm -rf /var/lib/apt/lists/*
 
-COPY bosh-cli/bosh /usr/local/bin/bosh
-COPY om/om /usr/local/bin/om
-COPY credhub-cli/credhub /usr/local/bin/credhub
+COPY bosh-cli/* om/* credhub-cli/* /usr/local/bin/
