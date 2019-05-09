@@ -98,11 +98,35 @@ jobs:
           chmod +x repo/om/om
           tar xzf credhub-cli/credhub-linux-2.4.0.tgz -C repo/credhub-cli
           chmod +x repo/credhub-cli/credhub
+  - task: build-labels-file
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: busybox
+      inputs:
+      - name: bosh-cli
+      - name: om
+      - name: credhub-cli
+      - name: repo
+      outputs:
+      - name: repo
+      run:
+        path: sh
+        args: 
+        - -c
+        - |
+          set -e
+          echo "{ \
+          \"org.opencontainers.image.created\": \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\", \
+          }" > repo/labels_file
   - put: cf-automateur-docker-image
     params:
       build: repo
       tag_as_latest: true
       tag_file: version/version
+      labels_file: repo/labels_file
     get_params:
       skip_download: true
   - put: version
